@@ -19,10 +19,9 @@ except ImportError:
     flags = None
 
 # If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/sheets.googleapis.com-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 CLIENT_SECRET_FILE = 'config/drive_client_secret.json'
-APPLICATION_NAME = 'Google Sheets API Python Quickstart'
+APPLICATION_NAME = 'Google Sheets API NiUnaMenos'
 
 
 def get_credentials():
@@ -39,7 +38,7 @@ def get_credentials():
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'sheets.googleapis.com-python-quickstart.json')
+                                   'sheets.googleapis.com-python-ni-una-menos.json')
 
     store = Storage(credential_path)
     credentials = store.get()
@@ -55,11 +54,11 @@ def get_credentials():
 
 
 def main():
-    """Shows basic usage of the Sheets API.
+    """
+    Creates a Sheets API service object
 
-    Creates a Sheets API service object and prints the names and majors of
-    students in a sample spreadsheet:
-    https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+    Se conecta a la spreadsheet creada para guardar los tweets,
+    y escribe rows de tweets.
     """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
@@ -82,18 +81,22 @@ def main():
 
     hashtags = ["#NiUnaMenos", "#VivasNosQueremos"]
 
+    # Iterar por los n hashtags que queramos analizar
     for hashtag in hashtags:
 
         max_id = None
         page_num = 0
 
+        # Recorremos solo 10000 paginas por una cuestión de tiempo :)
         while page_num < 10000:
+            # Inicializamos una lista de tweets vacia para cada pagina que
+            # recorremos
             values = []
+            # Solo nos interesan los tweets del 19/10
             results = twitter.search.tweets(
                 q=hashtag, count=100, include_entities=True, until="2016-10-20", since="2016-10-19", max_id=max_id)
 
-            search_metadata = results['search_metadata']
-
+            # Iteramos por cada tweet
             statuses = results['statuses']
             for status in statuses:
                 if status['coordinates']:
@@ -106,17 +109,20 @@ def main():
 
                     # Crear row
                     value = [timestamp, lat, lon, termino, tweet, user]
-                    print(value)
                     values.append(value)
 
             body = {'values': values}
 
+            # Intentar escribir a spreadsheet
             try:
                 result = service.spreadsheets().values().append(spreadsheetId=spreadsheetId,
                                                                 insertDataOption='INSERT_ROWS', range=rangeName, valueInputOption='RAW', body=body).execute()
             except Exception as e:
                 print(e)
 
+            # Chequear si hay más páginas. De no haber más, salir de este
+            # hashtag.
+            search_metadata = results['search_metadata']
             try:
                 max_id = search_metadata['next_results'].split(
                     "&")[0].split("max_id=")[1]
@@ -124,6 +130,7 @@ def main():
             except:
                 break
 
+            # Dormir un poco para no pasarnos del rate-limit de Twitter
             time.sleep(5)
 
 
