@@ -10,4 +10,4 @@ Para la API de Google Drive, elegí [el cliente de Google](https://developers.go
 
 # Mapa
 
-Los mapas creados con esta información se pueden encontrar en [mi cuenta de Carto](https://pilimayora.carto.com)
+Los mapas creados con esta información se pueden encontrar en [mi cuenta de Carto](https://pilimayora.carto.com/viz/b5ba9ea6-9865-11e6-b542-0ee66e2c9693/public_map)
